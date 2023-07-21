@@ -1,0 +1,42 @@
+name: Trigger auto deployment for charris-album-containerapp
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'src/**'
+    - '.github/workflows/charris-album-containerapp-AutoDeployTrigger-4702570e-7e4c-4d89-b330-f3ab0e40d10a.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CHARRISALBUMCONTAINERAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}/src 
+          registryUrl: caa8a0b308a0acr.azurecr.io
+          registryUsername: ${{ secrets.CHARRISALBUMCONTAINERAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CHARRISALBUMCONTAINERAPP_REGISTRY_PASSWORD }}
+          containerAppName: charris-album-containerapp
+          resourceGroup: charris-album-containerapp
+          imageToBuild: caa8a0b308a0acr.azurecr.io/charris-album-containerapp:${{ github.sha }}
+          dockerfilePath: Dockerfile
+
+     
+
